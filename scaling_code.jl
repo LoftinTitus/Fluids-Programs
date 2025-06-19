@@ -3,8 +3,8 @@
 
 # Constant integers
 # Two different radii
-r_real = 0.025/2
-r_scaled = 0.01/2
+r_real = 0.01/2
+r_scaled = 0.025/2
 
 # Frequency of the flow (70 BPM)
 f = 1.167
@@ -28,7 +28,7 @@ function Q_to_u_scaled(Q, r_scaled)
 
     for q in Q
         # Convert from L/min to m³/s: L/min * (1m³/1000L) * (1min/60s)
-        q_m3_s = q * (1/1000) * (1/60)
+        q_m3_s = (q * (1/1000)) * (1/60)
         # Calculate velocity: Q = A * u, so u = Q/A
         push!(u_scaled, q_m3_s/A)
     end
