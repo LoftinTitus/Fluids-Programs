@@ -57,16 +57,18 @@ function Re_scaled(u_scaled, r_scaled, mu, rho)
 end
 
 # This function calculates the scaled shear stresses
-function min_tau(Re_scaled)
+function min_tau(Re_scaled, u_scaled)
     # constants for the scaling law
     a = 10.476
     b = 2.127e-2
     c = -9.776e-6
 
     min_tau_values = Float64[]
-    for re in Re_scaled
+    for (re, u) in zip(Re_scaled, u_scaled)
         # Calculate the shear stress using the scaling law
-        tau_min = a * re * b + c * re^2
+
+        tau_poly = a * re * b + c * re^2
+        tau_min = tau_poly * (2 * mu * u) / r_scaled
         push!(min_tau_values, tau_min)
     end
     return min_tau_values
@@ -86,7 +88,7 @@ end
 Re_values = Re_scaled(u_scaled, r_scaled, mu, rho)
 
 # Calculate minimum tau values
-min_tau_values = min_tau(Re_values)
+min_tau_values = min_tau(Re_values, u_scaled)
 
 # Calculate Poiseuille tau values
 posieulle_tau_values = posieulle_tau(r_scaled, mu, u_scaled)
@@ -156,7 +158,7 @@ for (i, v) in enumerate(tau_array)
     c = -9.776e-6
 
     # Reynolds number coefficent ie: Re  = d * u
-    d = mu / (rho * r_real)
+    d = (rho * r_real * 2) / mu
 
     function system!(F, x)
 
@@ -177,7 +179,7 @@ for (i, v) in enumerate(tau_array)
         F[1] = tau - ((2 * mu * v_equiv) / r_real) * (tau_reduced_real * (tau_min_real - 2) + 2)
         F[2] = tau_reduced_real - (tau - tau_p_real)/denominator
         F[3] = tau_p_real - (4 * mu * v_equiv) / r_real
-        F[4] = tau_min_real - (a * d * v_equiv * b + c * d^2 * v_equiv^2)
+        F[4] = tau_min_real - (a + d * v_equiv * b + c * d^2 * v_equiv^2)
     end
 
     # Initial guess for [v_equiv, tau_reduced_real, tau_p_real, tau_min_real]
@@ -197,3 +199,20 @@ end
 
 # Print our array of velocities scaled down to realistic size
 println("Scaled velocities: ", v_equiv_array)
+
+# Convert velocitys into flow rates in L/min
+function u_to_Q_real(v_equiv_array, r_real)
+    Q_real = Float64[]
+    A = pi * r_real^2
+
+    for v in v_equiv_array
+
+        push!(Q_real, A * v * 1000 * 60) # Convert m³/s to L/min
+    end
+
+    return Q_real
+end
+
+Q_scaled = u_to_Q_real(v_equiv_array, r_real)
+
+println("Scaled flow rates:", Q_scaled)
