@@ -8,6 +8,7 @@ r_scaled = 0.025/2
 
 # Frequency of the flow (70 BPM)
 f = 1.167
+w = f * 2 * pi # Angular frequency
 
 # Dynamic viscoity
 mu = 3.5e-3
@@ -16,8 +17,8 @@ mu = 3.5e-3
 rho = 1060
 
 # Calculated for Womersley number
-alpha_real = r_real * sqrt((2 * pi * f * mu) / rho)
-alpha_scaled = r_scaled * sqrt((2 * pi * f * mu) / rho)
+alpha_real = r_real * sqrt((2 * pi * w * mu) / rho)
+alpha_scaled = r_scaled * sqrt((2 * pi * w * mu) / rho)
 
 Q = [2.45, 1.63, 2.37, 0.7, 1.4, 1.54, 1.25, 1.89, 1.49] # List of experimental flow rates (L/min)
 
@@ -94,10 +95,10 @@ min_tau_values = min_tau(Re_values, u_scaled)
 posieulle_tau_values = posieulle_tau(r_scaled, mu, u_scaled)
 
 # Debug output
-println("u_scaled: ", u_scaled)
-println("Re_values: ", Re_values)
-println("min_tau_values: ", min_tau_values)
-println("posieulle_tau_values: ", posieulle_tau_values)
+# println("u_scaled: ", u_scaled)
+#println("Re_values: ", Re_values)
+#println("min_tau_values: ", min_tau_values)
+#println("posieulle_tau_values: ", posieulle_tau_values)
 
 # This function calculates the reduced shear stress and shear stress in pa using NL solve
 using NLsolve
@@ -215,4 +216,4 @@ end
 
 Q_scaled = u_to_Q_real(v_equiv_array, r_real)
 
-println("Scaled flow rates:", Q_scaled)
+#println("Scaled flow rates:", Q_scaled)

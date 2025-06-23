@@ -1,0 +1,45 @@
+include("scaling_code.jl")
+
+using SpecialFunctions
+using LinearAlgebra
+
+A = alpha_scaled * im^(3/2)
+A = -13.16 + 13.16im
+t = 0.45 # Define a time point for velocity (halfway point)
+w = f * 2* pi
+
+# Precompute Bessel functions
+J0_A = besselj(0, A)
+J1_A = besselj(1, A)
+
+shear_stresses = []
+p_primes_list = []
+
+# Center line velocity ~ experimental data
+for u in u_scaled
+    # Find P' using centerline velocity
+    numerator = abs(im * rho * w * J0_A)
+    denomiator = abs(1-J0_A)
+    p_mag = u * numerator / denomiator
+
+    # Find complex pressure and the phase of that pressure
+    complex = (im / rho * w) * J1_A / (1 - J0_A)
+    p_phase = angle(complex)
+
+    # Calculate the complex pressure P'
+    p_prime = p_mag * cis(p_phase)
+    push!(p_primes_list, p_prime)
+
+    # Find shear stress
+    tau = p_prime * (r_scaled / A) * (J1_A / J0_A) * exp(im * w * t)
+    tau_scaled = real(tau)
+
+    push!(shear_stresses, tau_scaled)
+end
+
+p_primes_real = real.(p_primes_list)
+
+println("Pressure primes: ", p_primes_real)
+println("Shear stresses: ", shear_stresses)
+
+println(J0_A,J1_A)
