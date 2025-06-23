@@ -4,8 +4,7 @@ using SpecialFunctions
 using LinearAlgebra
 
 A = alpha_scaled * im^(3/2)
-A = -13.16 + 13.16im
-t = 0.45 # Define a time point for velocity (halfway point)
+t = 0.857 # Define a time point for velocity, in this case it is the max
 w = f * 2* pi
 
 # Precompute Bessel functions
@@ -39,7 +38,22 @@ end
 
 p_primes_real = real.(p_primes_list)
 
-println("Pressure primes: ", p_primes_real)
 println("Shear stresses: ", shear_stresses)
 
-println(J0_A,J1_A)
+# Solve for velocities given constant shear stress
+velocities_from_shear = []
+
+for tau_const in shear_stresses
+    shear_magnitude = abs((r_scaled / A) * (J1_A / J0_A))
+    p_prime_magnitude = abs(tau_const) / (shear_magnitude * 0.5)  # Factor of 0.5 for time averaging
+    
+    # Convert back to velocity
+    numerator = abs(im * rho * w * J0_A)
+    denominator = abs(1 - J0_A)
+    
+    u_calculated = p_prime_magnitude * denominator / numerator
+    push!(velocities_from_shear, u_calculated)
+end
+
+println("Velocities from shear (v2): ", velocities_from_shear)
+
